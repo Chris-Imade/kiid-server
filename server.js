@@ -330,7 +330,7 @@ app.post("/api/subscribe", async (req, res) => {
     // Send notification to admin
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
-      to: process.env.EMAIL_USER,
+      to: process.env.ADMIN_EMAIL || process.env.EMAIL_USER,
       subject: "New Newsletter Subscription",
       html: `
         <!DOCTYPE html>
@@ -430,7 +430,7 @@ app.post("/api/contact", async (req, res) => {
     // Send contact form submission to admin
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
-      to: process.env.EMAIL_USER,
+      to: process.env.ADMIN_EMAIL || process.env.EMAIL_USER,
       subject: `Contact Form: ${subject}`,
       html: `
         <!DOCTYPE html>
