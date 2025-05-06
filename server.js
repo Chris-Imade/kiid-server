@@ -2,12 +2,22 @@ const express = require("express");
 const nodemailer = require("nodemailer");
 const dotenv = require("dotenv");
 const os = require("os"); // Add os module for system information
+const cors = require("cors"); // Add CORS module
 
 // Load environment variables
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Enable CORS for all routes
+app.use(
+  cors({
+    origin: "*", // Allow all origins
+    methods: ["GET", "POST"], // Allow these HTTP methods
+    allowedHeaders: ["Content-Type", "Authorization"], // Allow these headers
+  })
+);
 
 // Middleware to parse request bodies
 app.use(express.json());
