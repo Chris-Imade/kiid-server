@@ -1,6 +1,7 @@
 const express = require("express");
 const nodemailer = require("nodemailer");
 const dotenv = require("dotenv");
+const os = require("os"); // Add os module for system information
 
 // Load environment variables
 dotenv.config();
@@ -20,6 +21,211 @@ const transporter = nodemailer.createTransport({
     pass: process.env.EMAIL_PASSWORD,
   },
 });
+
+// Root endpoint with network check
+app.get("/", (req, res) => {
+  // Get server information
+  const serverInfo = {
+    status: "online",
+    timestamp: new Date().toISOString(),
+    uptime: `${Math.floor(process.uptime())} seconds`,
+    hostname: os.hostname(),
+    platform: process.platform,
+    nodeVersion: process.version,
+    networkInterfaces: getNetworkInfo(),
+    memoryUsage: {
+      total: `${Math.round(os.totalmem() / (1024 * 1024))} MB`,
+      free: `${Math.round(os.freemem() / (1024 * 1024))} MB`,
+      usage: `${Math.round(
+        ((os.totalmem() - os.freemem()) / os.totalmem()) * 100
+      )}%`,
+    },
+    endpoints: [
+      {
+        path: "/",
+        method: "GET",
+        description: "Server status and network information",
+      },
+      {
+        path: "/api/subscribe",
+        method: "POST",
+        description: "Newsletter subscription endpoint",
+      },
+      {
+        path: "/api/contact",
+        method: "POST",
+        description: "Contact form submission endpoint",
+      },
+    ],
+  };
+
+  // Send HTML response
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Server Status</title>
+      <style>
+        body {
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+          line-height: 1.6;
+          color: #333;
+          max-width: 800px;
+          margin: 0 auto;
+          padding: 20px;
+          background-color: #f7f9fc;
+        }
+        h1 {
+          color: #2c3e50;
+          border-bottom: 2px solid #3498db;
+          padding-bottom: 10px;
+        }
+        .status-badge {
+          display: inline-block;
+          background-color: #27ae60;
+          color: white;
+          padding: 5px 10px;
+          border-radius: 4px;
+          font-weight: bold;
+          margin-left: 10px;
+        }
+        .card {
+          background-color: white;
+          border-radius: 8px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          padding: 20px;
+          margin-bottom: 20px;
+        }
+        .card h2 {
+          margin-top: 0;
+          color: #3498db;
+        }
+        pre {
+          background-color: #f1f1f1;
+          padding: 15px;
+          border-radius: 4px;
+          overflow-x: auto;
+        }
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          margin: 20px 0;
+        }
+        th, td {
+          text-align: left;
+          padding: 12px 15px;
+          border-bottom: 1px solid #ddd;
+        }
+        th {
+          background-color: #f1f5f9;
+        }
+        tr:hover {
+          background-color: #f9f9f9;
+        }
+      </style>
+    </head>
+    <body>
+      <h1>Server Status <span class="status-badge">Online</span></h1>
+      
+      <div class="card">
+        <h2>Server Information</h2>
+        <table>
+          <tr>
+            <td>Timestamp</td>
+            <td>${serverInfo.timestamp}</td>
+          </tr>
+          <tr>
+            <td>Uptime</td>
+            <td>${serverInfo.uptime}</td>
+          </tr>
+          <tr>
+            <td>Hostname</td>
+            <td>${serverInfo.hostname}</td>
+          </tr>
+          <tr>
+            <td>Platform</td>
+            <td>${serverInfo.platform}</td>
+          </tr>
+          <tr>
+            <td>Node.js Version</td>
+            <td>${serverInfo.nodeVersion}</td>
+          </tr>
+        </table>
+      </div>
+      
+      <div class="card">
+        <h2>Memory Usage</h2>
+        <table>
+          <tr>
+            <td>Total Memory</td>
+            <td>${serverInfo.memoryUsage.total}</td>
+          </tr>
+          <tr>
+            <td>Free Memory</td>
+            <td>${serverInfo.memoryUsage.free}</td>
+          </tr>
+          <tr>
+            <td>Usage</td>
+            <td>${serverInfo.memoryUsage.usage}</td>
+          </tr>
+        </table>
+      </div>
+      
+      <div class="card">
+        <h2>Network Interfaces</h2>
+        <pre>${JSON.stringify(serverInfo.networkInterfaces, null, 2)}</pre>
+      </div>
+      
+      <div class="card">
+        <h2>Available Endpoints</h2>
+        <table>
+          <tr>
+            <th>Path</th>
+            <th>Method</th>
+            <th>Description</th>
+          </tr>
+          ${serverInfo.endpoints
+            .map(
+              (endpoint) => `
+            <tr>
+              <td>${endpoint.path}</td>
+              <td>${endpoint.method}</td>
+              <td>${endpoint.description}</td>
+            </tr>
+          `
+            )
+            .join("")}
+        </table>
+      </div>
+    </body>
+    </html>
+  `);
+});
+
+// Helper function to get network interfaces information
+function getNetworkInfo() {
+  const interfaces = os.networkInterfaces();
+  const networkInfo = {};
+
+  for (const [name, netInterface] of Object.entries(interfaces)) {
+    // Filter to only include IPv4 interfaces
+    const ipv4Interfaces = netInterface.filter(
+      (iface) => iface.family === "IPv4"
+    );
+
+    if (ipv4Interfaces.length > 0) {
+      networkInfo[name] = ipv4Interfaces.map((iface) => ({
+        address: iface.address,
+        netmask: iface.netmask,
+        internal: iface.internal,
+      }));
+    }
+  }
+
+  return networkInfo;
+}
 
 // Newsletter subscription endpoint
 app.post("/api/subscribe", async (req, res) => {
