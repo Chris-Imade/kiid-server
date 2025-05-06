@@ -67,6 +67,7 @@ app.get("/", (req, res) => {
         description: "Contact form submission endpoint",
       },
     ],
+    webUrl: process.env.WEB_URL || "Not configured",
   };
 
   // Send HTML response
@@ -322,13 +323,19 @@ app.post("/api/subscribe", async (req, res) => {
               <p>Hello,</p>
               <p>You have successfully subscribed to our newsletter. We're excited to keep you updated with our latest news, offers, and updates.</p>
               <p>You'll receive your first newsletter soon. In the meantime, feel free to visit our website for more information.</p>
-              <a href="#" class="button">Visit Our Website</a>
+              <a href="${
+                process.env.WEB_URL
+              }" class="button">Visit Our Website</a>
               <p>If you have any questions, please don't hesitate to contact us.</p>
               <p>Best regards,<br>The Team</p>
             </div>
             <div class="footer">
               <p>This email was sent to ${email}</p>
-              <p>If you did not sign up for this newsletter, you can <a href="#">unsubscribe here</a>.</p>
+              <p>If you did not sign up for this newsletter, you can <a href="${
+                process.env.WEB_URL
+              }/unsubscribe?email=${encodeURIComponent(
+        email
+      )}">unsubscribe here</a>.</p>
               <p>&copy; ${new Date().getFullYear()} Your Company. All rights reserved.</p>
             </div>
           </div>
@@ -603,7 +610,9 @@ app.post("/api/contact", async (req, res) => {
               </div>
               
               <p>If you have any additional information to provide, please feel free to reply to this email.</p>
-              <a href="#" class="button">Visit Our Website</a>
+              <a href="${
+                process.env.WEB_URL
+              }" class="button">Visit Our Website</a>
               <p>Thank you for your patience and understanding.</p>
               <p>Best regards,<br>The Team</p>
             </div>

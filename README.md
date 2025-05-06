@@ -45,10 +45,13 @@ Visit the root URL to view server status and available endpoints.
    EMAIL_USER=your-gmail@gmail.com
    EMAIL_PASSWORD=your-app-password
    ADMIN_EMAIL=admin@example.com
+   WEB_URL=https://your-website-domain.com
    PORT=3000
    ```
 
    > Note: For Gmail, you'll need to use an App Password. [Learn how to create one](https://support.google.com/accounts/answer/185833)
+
+   > The WEB_URL variable is used in email templates for links back to your website. It should be set to your frontend website URL.
 
 ## Usage
 
